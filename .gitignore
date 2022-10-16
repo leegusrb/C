@@ -7,3 +7,5 @@
 .vscode/
 
 *.dSYM/
+
+test.c
