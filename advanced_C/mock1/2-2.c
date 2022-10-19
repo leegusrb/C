@@ -5,11 +5,14 @@ int *sel_next(int *p, int N, int M);
 int number(int *p, int *q);
 
 int main(){
-    int x[100], N = input(x), M, *q;
+    int x[100], N = input(x), M, *start = x, *end;
 
-    scanf("%d", &M);
-
-    printf("%d\n", number(x + M, sel_next(x, N, M)));
+    end = sel_next(x, N, 0);
+    while(start != end){
+        printf("%d\n", number(start, end));
+        start = end;
+        end = sel_next(x, N, start - x);
+    }
 
     return 0;
 }
@@ -22,14 +25,20 @@ int input(int *p){
         if(*p == -1) break;
     }
 
-    return N + 1;
+    return N;
 }
 
 int *sel_next(int *p, int N, int M){
     int *end = p + M;
 
-    while(end < p + N && *(end + 1) > *end){
-        end++;
+    if(*end < *(end + 1)){
+        while(end + 1 < p + N && *(end + 1) > *end){
+            end++;
+        }
+    }else{
+        while(end + 1 < p + N && *(end + 1) < *end){
+            end++;
+        }
     }
 
     return end;
