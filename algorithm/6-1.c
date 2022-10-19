@@ -12,7 +12,7 @@ int main(){
     L = (int *)malloc(sizeof(int) * n);
     input();
     
-    printf("%d\n", findElement(k, 0, n - 1));
+    printf(" %d\n", findElement(k, 0, n - 1));
 
     return 0;
 }
@@ -35,5 +35,4 @@ int findElement(int k, int l, int r){
     }else{
         return findElement(k, mid + 1, r);
     }
-    
 }
