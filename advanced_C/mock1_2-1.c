@@ -16,6 +16,7 @@ int main(){
 
 int input(int *p){
     int N = 0;
+    
     for(; ; p++, N++){
         scanf("%d", p);
         if(*p == -1) break;
@@ -25,13 +26,13 @@ int input(int *p){
 }
 
 int *sel_next(int *p, int N, int M){
-    p += M;
+    int *end = p + M;
 
-    for(int num = *p; num == *p; num++){
-        p++;
+    while(end < p + N && *(end + 1) > *end){
+        end++;
     }
 
-    return p - 1;
+    return end;
 }
 
 int number(int *p, int *q){
