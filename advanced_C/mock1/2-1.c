@@ -5,7 +5,7 @@ int *sel_next(int *p, int N, int M);
 int number(int *p, int *q);
 
 int main(){
-    int x[100], N = input(x), M, *q;
+    int x[100], N = input(x), M;
 
     scanf("%d", &M);
 
