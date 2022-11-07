@@ -29,4 +29,9 @@ int main() {
         }
         printf("\n");
     }
+
+    for (char **p = ar; p < ar + row; p++) {
+        free(*p);
+    }
+    free(ar);
 }

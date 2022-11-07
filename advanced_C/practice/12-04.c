@@ -30,4 +30,6 @@ int main() {
 
         printf("\n");
     }
+
+    free(st);
 }

@@ -23,4 +23,6 @@ int main() {
     }
 
     printf("%d %d\n", cnt[0], cnt[1]);
+
+    free(st);
 }

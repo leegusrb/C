@@ -28,4 +28,8 @@ int main() {
     for (char **p = st; p < st + N; p++) {
         printf("%s\n", *p);
     }
+        for (char **p = st; p < st + N; p++) {
+        free(*p);
+    }
+    free(st);
 }

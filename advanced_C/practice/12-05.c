@@ -21,4 +21,6 @@ int main() {
     for (int *p = ar; p < ar + N; p++) {
         printf("%d\n", *p);
     }
+
+    free(ar);
 }

@@ -19,4 +19,6 @@ int main() {
     }
 
     printf("%d\n", cnt);
+
+    free(ar);
 }

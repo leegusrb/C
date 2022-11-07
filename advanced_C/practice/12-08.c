@@ -23,4 +23,9 @@ int main() {
     }
 
     printf("%s\n", min);
+
+    for (char **p = st; p < st + N; p++) {
+        free(*p);
+    }
+    free(st);
 }

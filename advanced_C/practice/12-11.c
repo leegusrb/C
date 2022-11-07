@@ -12,12 +12,16 @@ int main() {
                 new[j] = ar[j];
             }
 
+            free(ar);
+
             ar = (int *) malloc(sizeof(int) * (size + 3));
             for (int j = 0; j < size; j++) {
                 ar[j] = new[j];
             }
 
             size += 3;
+
+            free(new);
         }
 
         scanf("%d", &ar[i]);
@@ -29,4 +33,6 @@ int main() {
         printf(" %d", *p);
     }
     printf("\n");
+
+    free(ar);
 }

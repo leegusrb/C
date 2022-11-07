@@ -19,4 +19,6 @@ int main() {
     }
 
     printf("%.2f\n", max);
+
+    free(ar);
 }

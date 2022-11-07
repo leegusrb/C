@@ -18,4 +18,6 @@ int main() {
     for (int *p = ar; p < ar + N - D; p++) {
         printf("%d\n", *p);
     }
+
+    free(ar);
 }

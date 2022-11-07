@@ -23,4 +23,7 @@ int main() {
         printf(" %d", *p);
     }
     printf("\n");
+
+    free(ar1);
+    free(ar2);
 }

@@ -17,4 +17,6 @@ int main() {
     }
 
     printf("%d\n", sum);
+
+    free(ar);
 }
