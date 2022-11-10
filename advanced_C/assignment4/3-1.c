@@ -15,12 +15,12 @@ int main() {
 
     struct student *st = (struct student *) malloc(sizeof(struct student) * N);
     for (struct student *p = st; p < st + N; p++) {
-        char tmp1[101], tmp2[101];
-        scanf("%s %s %s %lf", tmp1, p->id, tmp2, &p->subjectScore);
-        p->studentName = (char *) malloc(sizeof(char) * (strlen(tmp1) + 1));
-        p->subjectName = (char *) malloc(sizeof(char) * (strlen(tmp2) + 1));
-        strcpy(p->studentName, tmp1);
-        strcpy(p->subjectName, tmp2);
+        char studentName[101], subjectName[101];
+        scanf("%s %s %s %lf", studentName, p->id, subjectName, &p->subjectScore);
+        p->studentName = (char *) malloc(sizeof(char) * (strlen(studentName) + 1));
+        p->subjectName = (char *) malloc(sizeof(char) * (strlen(subjectName) + 1));
+        strcpy(p->studentName, studentName);
+        strcpy(p->subjectName, subjectName);
     }
 
     int K;
