@@ -127,7 +127,7 @@ void insertIncidentEdge(Vertex *v, Edge *e){
     } else {
         while (p->next) {
             p = p->next;
-        }
+        }   
         p->next = i;
     }
 }
