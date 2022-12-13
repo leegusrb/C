@@ -148,10 +148,9 @@ int kruskalMST(Graph *G) {
     int cnt = 0;
     while (cnt < n - 1) {
         Edge *q = findMinEdge(G);
-        // printf("\n[%d-%d]-%d\n", q->v1, q->v2, q->weight);
         q->isVisit = TRUE;
-        int u = q->v1;
-        int v = q->v2;
+        int u = findVertex(G, q->v1)->vName;
+        int v = findVertex(G, q->v2)->vName;
         if (s[u] != s[v]) {
             printf(" %d", q->weight);
             tot += q->weight;
