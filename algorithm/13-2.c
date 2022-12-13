@@ -3,11 +3,11 @@
 
 #define TRUE 1
 #define FALSE 0
-#define INF 1000
 
 typedef struct Edge {
     int v1, v2;
     int weight;
+    int isVisit;
     struct Edge *next;
 } Edge;
 
@@ -19,9 +19,6 @@ typedef struct IncidentEdge {
 typedef struct Vertex {
     int vName;
     IncidentEdge *iHead;
-    int d;
-    Edge *p;
-    int isVisit;
     struct Vertex *next;
 } Vertex;
 
@@ -42,11 +39,11 @@ void insertIncidentEdge(Vertex *v, Edge *e);
 
 Vertex *findVertex(Graph *G, int vName);
 
-void PrimJarnikMST(Graph *G);
+int kruskalMST(Graph *G);
 
-Vertex *findMinVertex(Graph *G);
+Edge *findMinEdge(Graph *G);
 
-int opposite(Vertex *v, IncidentEdge *i);
+void merge(int *s, int u, int v);
 
 int main() {
     Graph *G = (Graph *) malloc(sizeof(Graph));
@@ -64,12 +61,12 @@ int main() {
         insertEdge(G, v1, v2, w);
     }
 
-    PrimJarnikMST(G);
+    printf("%d\n", kruskalMST(G));
 
     return 0;
 }
 
-void initGraph(Graph *G){
+void initGraph(Graph *G) {
     G->vHead = NULL;
 }
 
@@ -77,9 +74,6 @@ void makeVertex(Graph *G, int vName) {
     Vertex *v = (Vertex *) malloc(sizeof(Vertex));
     v->vName = vName;
     v->iHead = NULL;
-    v->d = INF;
-    v->p = NULL;
-    v->isVisit = FALSE;
     v->next = NULL;
 
     Vertex *p = G->vHead;
@@ -98,6 +92,7 @@ void insertEdge(Graph *G, int v1, int v2, int weight) {
     e->v1 = v1;
     e->v2 = v2;
     e->weight = weight;
+    e->isVisit = FALSE;
     e->next = NULL;
 
     Edge *q = G->eHead;
@@ -113,10 +108,10 @@ void insertEdge(Graph *G, int v1, int v2, int weight) {
     Vertex *p = findVertex(G, v1);
     insertIncidentEdge(p, e);
     p = findVertex(G, v2);
-    insertIncidentEdge(p,  e);
+    insertIncidentEdge(p, e);
 }
 
-void insertIncidentEdge(Vertex *v, Edge *e){
+void insertIncidentEdge(Vertex *v, Edge *e) {
     IncidentEdge *i = (IncidentEdge *) malloc(sizeof(IncidentEdge));
     i->e = e;
     i->next = NULL;
@@ -132,7 +127,7 @@ void insertIncidentEdge(Vertex *v, Edge *e){
     }
 }
 
-Vertex *findVertex(Graph *G, int vName){
+Vertex *findVertex(Graph *G, int vName) {
     Vertex *p = G->vHead;
 
     while (p && p->vName != vName) {
@@ -142,62 +137,61 @@ Vertex *findVertex(Graph *G, int vName){
     return p;
 }
 
-void PrimJarnikMST(Graph *G){
-    Vertex *s = findVertex(G, 1);
-    s->d = 0;
+int kruskalMST(Graph *G) {
+    int *s = (int *) malloc(sizeof(int) * (n + 1));
+
+    for (int i = 1; i <= n; i++) {
+        s[i] = i;
+    }
 
     int tot = 0;
-
-    for (int i = 0; i < n; i++) {
-        Vertex *u = findMinVertex(G);
-        u->isVisit = TRUE;
-        printf(" %d", u->vName);
-        tot += u->d;
-        IncidentEdge *p = u->iHead;
-        while (p) {
-            Vertex *z = findVertex(G, opposite(u, p));
-            if (z->isVisit == FALSE && p->e->weight < z->d) {
-                z->d = p->e->weight;
-                z->p = p->e;
-            }
-
-            p = p->next;
+    int cnt = 0;
+    while (cnt < n - 1) {
+        Edge *q = findMinEdge(G);
+        // printf("\n[%d-%d]-%d\n", q->v1, q->v2, q->weight);
+        q->isVisit = TRUE;
+        int u = q->v1;
+        int v = q->v2;
+        if (s[u] != s[v]) {
+            printf(" %d", q->weight);
+            tot += q->weight;
+            cnt++;
+            merge(s, s[u], s[v]);
         }
     }
+    printf("\n");
 
-    printf("\n%d\n", tot);
+    return tot;
 }
 
-Vertex *findMinVertex(Graph *G){
-    Vertex *p = G->vHead;
-    Vertex *min = NULL;
+Edge *findMinEdge(Graph *G) {
+    Edge *q = G->eHead;
+    Edge *min = NULL;
 
-    while (p) {
-        if (p->isVisit == FALSE) {
-            min = p;
+    while (q) {
+        if (q->isVisit == FALSE) {
+            min = q;
             break;
         }
-        p = p->next;
+        q = q->next;
     }
 
-    p = min;
+    q = min;
 
-    while (p) {
-        if (p->isVisit == FALSE && p->d < min->d) {
-            min = p;
+    while (q) {
+        if (q->isVisit == FALSE && q->weight < min->weight) {
+            min = q;
         }
-        p = p->next;
+        q = q->next;
     }
 
     return min;
 }
 
-int opposite(Vertex *v, IncidentEdge *i) {
-    Edge *e = i->e;
-
-    if (e->v1 == v->vName) {
-        return e->v2;
-    } else {
-        return e->v1;
+void merge(int *s, int u, int v) {
+    for (int i = 1; i <= n; i++) {
+        if (s[i] == v) {
+            s[i] = u;
+        }
     }
 }
