@@ -1,11 +1,10 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 
 #define INF (30 * 1000)
 
 typedef struct Edge {
-    int v1, v2;
+    int from, to;
     int weight;
     struct Edge *next;
 } Edge;
@@ -25,15 +24,13 @@ int n, m, s;
 
 void initGraph(Graph *G);
 
-void makeVertex(Graph *G, int vName);
+void insertVertex(Graph *G, int vName);
 
-void insertEdge(Graph *G, int v1, int v2, int weight);
+void insertEdge(Graph *G, int from, int to, int weight);
 
 Vertex *findVertex(Graph *G, int vName);
 
 void BellmanFordShortestPaths(Graph *G);
-
-int min(int a, int b);
 
 int main() {
     Graph *G = (Graph *) malloc(sizeof(Graph));
@@ -42,13 +39,13 @@ int main() {
     scanf("%d %d %d", &n, &m, &s);
 
     for (int i = 1; i <= n; i++) {
-        makeVertex(G, i);
+        insertVertex(G, i);
     }
 
     for (int i = 0; i < m; i++) {
-        int v1, v2, w;
-        scanf("%d %d %d", &v1, &v2, &w);
-        insertEdge(G, v1, v2, w);
+        int v1, v2, weight;
+        scanf("%d %d %d", &v1, &v2, &weight);
+        insertEdge(G, v1, v2, weight);
     }
 
     BellmanFordShortestPaths(G);
@@ -56,11 +53,13 @@ int main() {
     return 0;
 }
 
+
 void initGraph(Graph *G) {
     G->vHead = NULL;
+    G->eHead = NULL;
 }
 
-void makeVertex(Graph *G, int vName) {
+void insertVertex(Graph *G, int vName) {
     Vertex *v = (Vertex *) malloc(sizeof(Vertex));
     v->vName = vName;
     v->d = INF;
@@ -77,57 +76,54 @@ void makeVertex(Graph *G, int vName) {
     }
 }
 
-void insertEdge(Graph *G, int v1, int v2, int weight) {
+void insertEdge(Graph *G, int from, int to, int weight) {
     Edge *e = (Edge *) malloc(sizeof(Edge));
-    e->v1 = v1;
-    e->v2 = v2;
+    e->from = from;
+    e->to = to;
     e->weight = weight;
     e->next = NULL;
 
-    Edge *q = G->eHead;
-    if (q == NULL) {
+    Edge *p = G->eHead;
+    if (p == NULL) {
         G->eHead = e;
     } else {
-        while (q->next) {
-            q = q->next;
+        while (p->next) {
+            p = p->next;
         }
-        q->next = e;
+        p->next = e;
     }
+
 }
 
 Vertex *findVertex(Graph *G, int vName) {
-    Vertex *p = G->vHead;
+    Vertex *v = G->vHead;
 
-    while (p && p->vName != vName) {
-        p = p->next;
+    while (v && v->vName != vName) {
+        v = v->next;
     }
 
-    return p;
+    return v;
 }
 
-void BellmanFordShortestPaths(Graph *G){
+void BellmanFordShortestPaths(Graph *G) {
     findVertex(G, s)->d = 0;
 
-    for (int i = 1; i < n; i++) {
-        for (Edge *q = G->eHead; q; q = q->next) {
-            Vertex *u = findVertex(G, q->v1);
-            Vertex *z = findVertex(G, q->v2);
-            if (z->d == INF && u->d == INF) continue;
-            z->d = min(z->d, u->d + q->weight);
+    for (int i = 0; i < n - 1; i++) {
+        for (Edge *p = G->eHead; p; p = p->next) {
+            Vertex *v = findVertex(G, p->from);
+            Vertex *w = findVertex(G, p->to);
+
+            if (w->d == INF && v->d == INF) continue;
+
+            if (w->d > v->d + p->weight) {
+                w->d = v->d + p->weight;
+            }
         }
     }
 
     for (Vertex *p = G->vHead; p; p = p->next) {
-        if (s != p->vName && p->d != INF) {
+        if (p->vName != s && p->d != INF) {
             printf("%d %d\n", p->vName, p->d);
         }
-    }
-}
-
-int min(int a, int b) {
-    if (a < b) {
-        return a;
-    } else {
-        return b;
     }
 }
