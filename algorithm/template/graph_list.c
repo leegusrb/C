@@ -38,9 +38,15 @@ int main() {
     Graph *G = (Graph *) malloc(sizeof(Graph));
     initGraph(G);
 
-    // insertVertices
-
-    // insertEdges
+    /**
+     * insertVertices
+     * insertVertex(G, vName);
+     */
+    
+    /**
+     * insertEdges
+     * insertEdge(G, v1, v2, weight);
+     */
 
     return 0;
 }
