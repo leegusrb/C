@@ -12,16 +12,16 @@ typedef struct Edge {
 } Edge;
 
 typedef struct IncidentEdge {
+    int aName;
     Edge *e;
     struct IncidentEdge *next;
 } IncidentEdge;
 
 typedef struct Vertex {
     int vName;
-    IncidentEdge *iHead;
-    int d;
-    Edge *p;
     int isVisit;
+    int d;
+    IncidentEdge *iHead;
     struct Vertex *next;
 } Vertex;
 
@@ -34,19 +34,17 @@ int n, m;
 
 void initGraph(Graph *G);
 
-void makeVertex(Graph *G, int vName);
+void insertVertex(Graph *G, int vName);
 
 void insertEdge(Graph *G, int v1, int v2, int weight);
 
-void insertIncidentEdge(Vertex *v, Edge *e);
+void insertIncidentEdge(Vertex *v, int aName, Edge *e);
 
 Vertex *findVertex(Graph *G, int vName);
 
 void PrimJarnikMST(Graph *G);
 
-Vertex *findMinVertex(Graph *G);
-
-int opposite(Vertex *v, IncidentEdge *i);
+Vertex *findMin(Graph *G);
 
 int main() {
     Graph *G = (Graph *) malloc(sizeof(Graph));
@@ -55,13 +53,13 @@ int main() {
     scanf("%d %d", &n, &m);
 
     for (int i = 1; i <= n; i++) {
-        makeVertex(G, i);
+        insertVertex(G, i);
     }
-
+    
     for (int i = 0; i < m; i++) {
-        int v1, v2, w;
-        scanf("%d %d %d", &v1, &v2, &w);
-        insertEdge(G, v1, v2, w);
+        int v1, v2, weight;
+        scanf("%d %d %d", &v1, &v2, &weight);
+        insertEdge(G, v1, v2, weight);
     }
 
     PrimJarnikMST(G);
@@ -69,17 +67,18 @@ int main() {
     return 0;
 }
 
-void initGraph(Graph *G){
+
+void initGraph(Graph *G) {
     G->vHead = NULL;
+    G->eHead = NULL;
 }
 
-void makeVertex(Graph *G, int vName) {
+void insertVertex(Graph *G, int vName) {
     Vertex *v = (Vertex *) malloc(sizeof(Vertex));
     v->vName = vName;
-    v->iHead = NULL;
-    v->d = INF;
-    v->p = NULL;
     v->isVisit = FALSE;
+    v->d = INF;
+    v->iHead = NULL;
     v->next = NULL;
 
     Vertex *p = G->vHead;
@@ -100,24 +99,23 @@ void insertEdge(Graph *G, int v1, int v2, int weight) {
     e->weight = weight;
     e->next = NULL;
 
-    Edge *q = G->eHead;
-    if (q == NULL) {
+    Edge *p = G->eHead;
+    if (p == NULL) {
         G->eHead = e;
     } else {
-        while (q->next) {
-            q = q->next;
+        while (p->next) {
+            p = p->next;
         }
-        q->next = e;
+        p->next = e;
     }
 
-    Vertex *p = findVertex(G, v1);
-    insertIncidentEdge(p, e);
-    p = findVertex(G, v2);
-    insertIncidentEdge(p,  e);
+    insertIncidentEdge(findVertex(G, v1), v2, e);
+    insertIncidentEdge(findVertex(G, v2), v1, e);
 }
 
-void insertIncidentEdge(Vertex *v, Edge *e){
+void insertIncidentEdge(Vertex *v, int aName, Edge *e) {
     IncidentEdge *i = (IncidentEdge *) malloc(sizeof(IncidentEdge));
+    i->aName = aName;
     i->e = e;
     i->next = NULL;
 
@@ -125,79 +123,68 @@ void insertIncidentEdge(Vertex *v, Edge *e){
     if (p == NULL) {
         v->iHead = i;
     } else {
-        while (p->next) {
-            p = p->next;
-        }
-        p->next = i;
-    }
-}
-
-Vertex *findVertex(Graph *G, int vName){
-    Vertex *p = G->vHead;
-
-    while (p && p->vName != vName) {
-        p = p->next;
-    }
-
-    return p;
-}
-
-void PrimJarnikMST(Graph *G){
-    Vertex *s = findVertex(G, 1);
-    s->d = 0;
-
-    int tot = 0;
-
-    for (int i = 0; i < n; i++) {
-        Vertex *u = findMinVertex(G);
-        u->isVisit = TRUE;
-        printf(" %d", u->vName);
-        tot += u->d;
-        IncidentEdge *p = u->iHead;
-        while (p) {
-            Vertex *z = findVertex(G, opposite(u, p));
-            if (z->isVisit == FALSE && p->e->weight < z->d) {
-                z->d = p->e->weight;
-                z->p = p->e;
+        if (p->aName > i->aName) {
+            i->next = p;
+            v->iHead = i;
+        } else {
+            while (p->next && p->next->aName < i->aName) {
+                p = p->next;
             }
-
-            p = p->next;
+            i->next = p->next;
+            p->next = i;
         }
     }
-
-    printf("\n%d\n", tot);
 }
 
-Vertex *findMinVertex(Graph *G){
-    Vertex *p = G->vHead;
-    Vertex *min = NULL;
+Vertex *findVertex(Graph *G, int vName) {
+    Vertex *v = G->vHead;
 
-    while (p) {
+    while (v && v->vName != vName) {
+        v = v->next;
+    }
+
+    return v;
+}
+
+void PrimJarnikMST(Graph *G) {
+    findVertex(G, 1)->d = 0;
+    
+    int tot = 0;
+    int cnt = 0;
+    while (cnt < n) {
+        Vertex *v = findMin(G);
+        printf(" %d", v->vName);
+        v->isVisit = TRUE;
+        tot += v->d;
+        cnt++;
+
+        for (IncidentEdge *p = v->iHead; p; p = p->next) {
+            Vertex *w = findVertex(G, p->aName);
+            if (w->isVisit == FALSE && p->e->weight < w->d) {
+                w->d = p->e->weight;
+            }
+        }
+    }
+    printf("\n");
+
+    printf("%d\n", tot);
+}
+
+Vertex *findMin(Graph *G) {
+    Vertex *min = NULL;
+    
+    for (Vertex *p = G->vHead; p; p = p->next) {
         if (p->isVisit == FALSE) {
             min = p;
             break;
         }
-        p = p->next;
     }
-
-    p = min;
-
-    while (p) {
+    
+    for (Vertex *p = min; p; p = p->next) {
         if (p->isVisit == FALSE && p->d < min->d) {
             min = p;
         }
-        p = p->next;
     }
-
+    
     return min;
-}
-
-int opposite(Vertex *v, IncidentEdge *i) {
-    Edge *e = i->e;
-
-    if (e->v1 == v->vName) {
-        return e->v2;
-    } else {
-        return e->v1;
-    }
 }
