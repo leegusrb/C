@@ -1,55 +1,58 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define swap(v1, v2) {int tmp = v1; v1 = v2; v2 = tmp;}
-
 typedef struct Edge {
     int v1, v2;
     int weight;
     struct Edge *next;
-}Edge;
+} Edge;
 
 typedef struct IncidentEdge {
-    int adjVertex;
+    int aName;
     Edge *e;
     struct IncidentEdge *next;
-}IncidentEdge;
+} IncidentEdge;
 
 typedef struct Vertex {
     int vName;
     IncidentEdge *iHead;
     struct Vertex *next;
-}Vertex;
+} Vertex;
 
 typedef struct {
     Vertex *vHead;
     Edge *eHead;
-}Graph;
+} Graph;
 
 void initGraph(Graph *G);
 
 void insertVertex(Graph *G, int vName);
-void insertEdge(Graph *G, int v1, int v2, int weight);
-void insertIncidentEdge(Vertex *v, int adjVertex, Edge *e);
 
-void removeEdge(Graph *G, int v1, int v2);
-void removeIncidentEdge(Vertex *v, int adjVertex);
+void insertEdge(Graph *G, int v1, int v2, int weight);
+
+void insertIncidentEdge(Vertex *v, int aName, Edge *e);
+
+Vertex *findVertex(Graph *G, int vName);
+
+void print(Graph *G, int vName);
 
 void modifyWeight(Graph *G, int v1, int v2, int weight);
-void print(Graph *G, int vName);
-void printAll(Graph *G);
-Vertex *findVertex(Graph *G, int vName);
+
+Edge *findEdge(Graph *G, int v1, int v2);
+
+void removeEdge(Graph *G, Edge *e);
+
+void removeIncidentEdge(Vertex *v, IncidentEdge *i);
+
+IncidentEdge *findIncidentEdge(Vertex *v, int aName);
 
 int main() {
     Graph *G = (Graph *) malloc(sizeof(Graph));
     initGraph(G);
 
-    insertVertex(G, 1);
-    insertVertex(G, 2);
-    insertVertex(G, 3);
-    insertVertex(G, 4);
-    insertVertex(G, 5);
-    insertVertex(G, 6);
+    for (int i = 1; i <= 6; i++) {
+        insertVertex(G, i);
+    }
 
     insertEdge(G, 1, 2, 1);
     insertEdge(G, 1, 3, 1);
@@ -60,8 +63,6 @@ int main() {
     insertEdge(G, 5, 5, 4);
     insertEdge(G, 5, 6, 3);
 
-//    printAll(G);
-
     while (1) {
         char c;
         scanf("%c", &c);
@@ -70,32 +71,31 @@ int main() {
             scanf("%d", &vName);
             print(G, vName);
         } else if (c == 'm') {
-            int a, b, w;
-            scanf("%d %d %d", &a, &b, &w);
-            modifyWeight(G, a, b, w);
+            int v1, v2, weight;
+            scanf("%d %d %d", &v1, &v2, &weight);
+            modifyWeight(G, v1, v2, weight);
         } else if (c == 'q') {
             break;
         }
-//        printAll(G);
-        getchar();
     }
 
     return 0;
 }
 
-void initGraph(Graph *G){
+
+void initGraph(Graph *G) {
     G->vHead = NULL;
     G->eHead = NULL;
 }
 
-void insertVertex(Graph *G, int vName){
+void insertVertex(Graph *G, int vName) {
     Vertex *v = (Vertex *) malloc(sizeof(Vertex));
     v->vName = vName;
     v->iHead = NULL;
     v->next = NULL;
 
     Vertex *p = G->vHead;
-    if (!p) {
+    if (p == NULL) {
         G->vHead = v;
     } else {
         while (p->next) {
@@ -105,157 +105,146 @@ void insertVertex(Graph *G, int vName){
     }
 }
 
-void insertEdge(Graph *G, int v1, int v2, int weight){
-    if (v1 > v2) swap(v1, v2)
+void insertEdge(Graph *G, int v1, int v2, int weight) {
     Edge *e = (Edge *) malloc(sizeof(Edge));
     e->v1 = v1;
     e->v2 = v2;
     e->weight = weight;
     e->next = NULL;
 
-    Edge *q = G->eHead;
-    if (!q) {
+    Edge *p = G->eHead;
+    if (p == NULL) {
         G->eHead = e;
     } else {
-        while (q->next) {
-            q = q->next;
+        while (p->next) {
+            p = p->next;
         }
-        q->next = e;
+        p->next = e;
     }
 
-    Vertex *v = findVertex(G, v1);
-    insertIncidentEdge(v, v2, e);
-    if (v1 != v2) {
-        v = findVertex(G, v2);
-        insertIncidentEdge(v, v1, e);
+    insertIncidentEdge(findVertex(G, v1), v2, e);
+    if (v1 != v2){
+        insertIncidentEdge(findVertex(G, v2), v1, e);
     }
 }
 
-void insertIncidentEdge(Vertex *v, int adjVertex, Edge *e){
+void insertIncidentEdge(Vertex *v, int aName, Edge *e) {
     IncidentEdge *i = (IncidentEdge *) malloc(sizeof(IncidentEdge));
-    i->adjVertex = adjVertex;
+    i->aName = aName;
     i->e = e;
     i->next = NULL;
 
     IncidentEdge *p = v->iHead;
-    if (!p) {
-        v->iHead = i;
-    } else if(p->adjVertex > adjVertex) {
-        i->next = p;
+    if (p == NULL) {
         v->iHead = i;
     } else {
-        while (p->next && p->next->adjVertex < adjVertex) {
-            p = p->next;
-        }
-        i->next = p->next;
-        p->next = i;
-    }
-}
-
-void removeEdge(Graph *G, int v1, int v2) {
-    if (v1 > v2) swap(v1, v2)
-    Vertex *ver1 = findVertex(G, v1);
-    Vertex *ver2 = findVertex(G, v2);
-    if (!ver1 || !ver2) {
-        printf("-1\n");
-        return;
-    }
-    removeIncidentEdge(ver1, v2);
-    if (v1 != v2) {
-        removeIncidentEdge(ver2, v1);
-    }
-
-    Edge *p = G->eHead;
-    Edge *q;
-    if (p->v1 == v1 && p->v2 == v2) {
-        G->eHead = p->next;
-    } else {
-        while (p->v1 != v1 || p->v2 != v2) {
-            q = p;
-            p = p->next;
-        }
-        q->next = p;
-    }
-
-    free(p);
-}
-
-void removeIncidentEdge(Vertex *v, int adjVertex){
-    IncidentEdge *p = v->iHead;
-    IncidentEdge *q;
-
-    if (p->adjVertex == adjVertex) {
-        v->iHead = p->next;
-    } else {
-        while (p->adjVertex != adjVertex) {
-            q = p;
-            p = p->next;
-        }
-        q->next = p->next;
-    }
-
-    free(p);
-}
-
-void modifyWeight(Graph *G, int v1, int v2, int weight){
-    if (weight == 0) {
-        removeEdge(G, v1, v2);
-        return;
-    }
-
-    Vertex *p = findVertex(G, v1);
-
-    if (!p || !findVertex(G, v2)) {
-        printf("-1\n");
-        return;
-    }
-
-    IncidentEdge *q = p->iHead;
-
-    while (q) {
-        if (q->adjVertex == v2) {
-            q->e->weight = weight;
-            break;
+        if (p->aName > i->aName) {
+            i->next = p;
+            v->iHead = i;
         } else {
-            q = q->next;
+            while (p->next && p->next->aName < i->aName) {
+                p = p->next;
+            }
+            i->next = p->next;
+            p->next = i;
         }
-    }
-
-    if (!q) {
-        insertEdge(G, v1, v2, weight);
     }
 }
 
-void print(Graph *G, int vName){
-    Vertex *p = findVertex(G, vName);
+Vertex *findVertex(Graph *G, int vName) {
+    Vertex *v = G->vHead;
 
-    if (!p) {
+    while (v && v->vName != vName) {
+        v = v->next;
+    }
+
+    return v;
+}
+
+void print(Graph *G, int vName) {
+    Vertex *v = findVertex(G, vName);
+
+    if (v == NULL) {
         printf("-1\n");
         return;
     }
 
-    for (IncidentEdge *q = p->iHead; q; q = q->next) {
-        printf(" %d %d", q->adjVertex, q->e->weight);
+    for (IncidentEdge *p = v->iHead; p; p = p->next) {
+        printf(" %d %d", p->aName, p->e->weight);
     }
     printf("\n");
 }
 
-void printAll(Graph *G){
-    for (Vertex *p = G->vHead; p; p = p->next) {
-        printf("[%d] : ", p->vName);
-        for (IncidentEdge *q = p->iHead; q; q = q->next) {
-            printf("[%d]-[%d] ", q->adjVertex, q->e->weight);
-        }
-        printf("\n");
+void modifyWeight(Graph *G, int v1, int v2, int weight) {
+    if (findVertex(G, v1) == NULL || findVertex(G, v2) == NULL) {
+        printf("-1\n");
+        return;
+    }
+
+    Edge *e = findEdge(G, v1, v2);
+
+    if (e == NULL) {
+        insertEdge(G, v1, v2, weight);
+    } else if (weight == 0) {
+        removeEdge(G, e);
+    } else {
+        e->weight = weight;
     }
 }
 
-Vertex *findVertex(Graph *G, int vName){
-    Vertex *p = G->vHead;
+Edge *findEdge(Graph *G, int v1, int v2) {
+    Vertex *v = findVertex(G, v1);
 
-    while (p && p->vName != vName) {
-        p = p->next;
+    for (IncidentEdge *p = v->iHead; p; p = p->next) {
+        if (p->aName == v2) {
+            return p->e;
+        }
     }
 
-    return p;
+    return NULL;
+}
+
+void removeEdge(Graph *G, Edge *e) {
+    Vertex *v1 = findVertex(G, e->v1);
+    Vertex *v2 = findVertex(G, e->v2);
+    removeIncidentEdge(v1, findIncidentEdge(v1, v2->vName));
+    if (v1 != v2) {
+        removeIncidentEdge(v2, findIncidentEdge(v2, v1->vName));
+    }
+
+    Edge *p = G->eHead;
+    if (p == e) {
+        G->eHead = e->next;
+    } else {
+        while (p->next != e) {
+            p = p->next;
+        }
+        p->next = e->next;
+    }
+
+    free(e);
+}
+
+void removeIncidentEdge(Vertex *v, IncidentEdge *i) {
+    IncidentEdge *p = v->iHead;
+    if (p == i) {
+        v->iHead = i->next;
+    } else {
+        while (p->next != i) {
+            p = p->next;
+        }
+        p->next = i->next;
+    }
+
+    free(i);
+}
+
+IncidentEdge *findIncidentEdge(Vertex *v, int aName){
+    IncidentEdge *i = v->iHead;
+
+    while (i && i->aName != aName) {
+        i = i->next;
+    }
+
+    return i;
 }
