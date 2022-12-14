@@ -6,20 +6,20 @@
 #define INF (30 * 1000)
 
 typedef struct Edge {
-    int v1, v2;
     int weight;
     struct Edge *next;
 } Edge;
 
 typedef struct IncidentEdge {
+    int aName;
     Edge *e;
     struct IncidentEdge *next;
 } IncidentEdge;
 
 typedef struct Vertex {
     int vName;
-    int d;
     int isVisit;
+    int d;
     IncidentEdge *iHead;
     struct Vertex *next;
 } Vertex;
@@ -33,19 +33,17 @@ int n, m, s;
 
 void initGraph(Graph *G);
 
-void makeVertex(Graph *G, int vName);
+void insertVertex(Graph *G, int vName);
 
 void insertEdge(Graph *G, int v1, int v2, int weight);
 
-void insertIncidentEdge(Vertex *v, Edge *e);
+void insertIncidentEdge(Vertex *v, int aName, Edge *e);
 
 Vertex *findVertex(Graph *G, int vName);
 
 void DijkstraShortestPaths(Graph *G);
 
-Vertex *findMinVertex(Graph *G);
-
-int opposite(Vertex *v, IncidentEdge *i);
+Vertex *findMin(Graph *G);
 
 int main() {
     Graph *G = (Graph *) malloc(sizeof(Graph));
@@ -54,13 +52,13 @@ int main() {
     scanf("%d %d %d", &n, &m, &s);
 
     for (int i = 1; i <= n; i++) {
-        makeVertex(G, i);
+        insertVertex(G, i);
     }
 
     for (int i = 0; i < m; i++) {
-        int v1, v2, w;
-        scanf("%d %d %d", &v1, &v2, &w);
-        insertEdge(G, v1, v2, w);
+        int v1, v2, weight;
+        scanf("%d %d %d", &v1, &v2, &weight);
+        insertEdge(G, v1, v2, weight);
     }
 
     DijkstraShortestPaths(G);
@@ -68,15 +66,17 @@ int main() {
     return 0;
 }
 
+
 void initGraph(Graph *G) {
     G->vHead = NULL;
+    G->eHead = NULL;
 }
 
-void makeVertex(Graph *G, int vName) {
+void insertVertex(Graph *G, int vName) {
     Vertex *v = (Vertex *) malloc(sizeof(Vertex));
     v->vName = vName;
-    v->d = INF;
     v->isVisit = FALSE;
+    v->d = INF;
     v->iHead = NULL;
     v->next = NULL;
 
@@ -93,29 +93,26 @@ void makeVertex(Graph *G, int vName) {
 
 void insertEdge(Graph *G, int v1, int v2, int weight) {
     Edge *e = (Edge *) malloc(sizeof(Edge));
-    e->v1 = v1;
-    e->v2 = v2;
     e->weight = weight;
     e->next = NULL;
 
-    Edge *q = G->eHead;
-    if (q == NULL) {
+    Edge *p = G->eHead;
+    if (p == NULL) {
         G->eHead = e;
     } else {
-        while (q->next) {
-            q = q->next;
+        while (p->next) {
+            p = p->next;
         }
-        q->next = e;
+        p->next = e;
     }
 
-    Vertex *p = findVertex(G, v1);
-    insertIncidentEdge(p, e);
-    p = findVertex(G, v2);
-    insertIncidentEdge(p, e);
+    insertIncidentEdge(findVertex(G, v1), v2, e);
+    insertIncidentEdge(findVertex(G, v2), v1, e);
 }
 
-void insertIncidentEdge(Vertex *v, Edge *e) {
+void insertIncidentEdge(Vertex *v, int aName, Edge *e) {
     IncidentEdge *i = (IncidentEdge *) malloc(sizeof(IncidentEdge));
+    i->aName = aName;
     i->e = e;
     i->next = NULL;
 
@@ -123,79 +120,65 @@ void insertIncidentEdge(Vertex *v, Edge *e) {
     if (p == NULL) {
         v->iHead = i;
     } else {
-        while (p->next) {
-            p = p->next;
+        if (p->aName > i->aName) {
+            i->next = p;
+            v->iHead = i;
+        } else {
+            while (p->next && p->next->aName < i->aName) {
+                p = p->next;
+            }
+            i->next = p->next;
+            p->next = i;
         }
-        p->next = i;
     }
 }
 
 Vertex *findVertex(Graph *G, int vName) {
-    Vertex *p = G->vHead;
+    Vertex *v = G->vHead;
 
-    while (p && p->vName != vName) {
-        p = p->next;
+    while (v && v->vName != vName) {
+        v = v->next;
     }
 
-    return p;
+    return v;
 }
 
 void DijkstraShortestPaths(Graph *G) {
     findVertex(G, s)->d = 0;
 
     for (int i = 0; i < n; i++) {
-        Vertex *u = findMinVertex(G);
-        u->isVisit = TRUE;
-        IncidentEdge *ie = u->iHead;
-        while (ie) {
-            Vertex *z = findVertex(G, opposite(u, ie));
-            if (z->isVisit == FALSE) {
-                if (u->d + ie->e->weight < z->d) {
-                    z->d = u->d + ie->e->weight;
-                }
+        Vertex *v = findMin(G);
+        v->isVisit = TRUE;
+        for (IncidentEdge *p = v->iHead; p; p = p->next) {
+            Vertex *w = findVertex(G, p->aName);
+            if (w->isVisit == FALSE &&  w->d > v->d + p->e->weight) {
+                w->d = v->d + p->e->weight;
             }
-
-            ie = ie->next;
         }
     }
-
-    Vertex *p = G->vHead;
-    for (int i = 0; i < n; i++) {
+    
+    for (Vertex *p = G->vHead; p; p = p->next) {
         if (p->vName != s && p->d != INF) {
             printf("%d %d\n", p->vName, p->d);
         }
-        p = p->next;
     }
 }
 
-Vertex *findMinVertex(Graph *G){
-    Vertex *p = G->vHead;
+Vertex *findMin(Graph *G) {
     Vertex *min = NULL;
     
-    while (p) {
+    for (Vertex *p = G->vHead; p; p = p->next) {
         if (p->isVisit == FALSE) {
             min = p;
             break;
         }
-        p = p->next;
     }
     
-    p = min;
-    
-    while(p) {
+    for (Vertex *p = min; p; p = p->next) {
         if (p->isVisit == FALSE && p->d < min->d) {
             min = p;
         }
-        p = p->next;
     }
     
     return min;
-}
-
-int opposite(Vertex *v, IncidentEdge *i){
-    if (i->e->v1 == v->vName) {
-        return i->e->v2;
-    } else {
-        return i->e->v1;
-    }
 }
