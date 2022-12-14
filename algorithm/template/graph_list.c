@@ -36,9 +36,9 @@ Vertex *findVertex(Graph *G, int vName);
 int main() {
     Graph *G = (Graph *) malloc(sizeof(Graph));
     initGraph(G);
-    
+
     // insertVertices
-    
+
     // insertEdges
 
     return 0;
@@ -107,7 +107,7 @@ void insertIncidentEdge(Vertex *v, Edge *e) {
 Vertex *findVertex(Graph *G, int vName) {
     Vertex *p = G->vHead;
 
-    while (p && p->vName == vName) {
+    while (p && p->vName != vName) {
         p = p->next;
     }
 
