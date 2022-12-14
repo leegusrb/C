@@ -8,6 +8,7 @@ typedef struct Edge {
 } Edge;
 
 typedef struct IncidentEdge {
+    int aName;
     Edge *e;
     struct IncidentEdge *next;
 } IncidentEdge;
@@ -29,7 +30,7 @@ void insertVertex(Graph *G, int vName);
 
 void insertEdge(Graph *G, int v1, int v2, int weight);
 
-void insertIncidentEdge(Vertex *v, Edge *e);
+void insertIncidentEdge(Vertex *v, int aName, Edge *e);
 
 Vertex *findVertex(Graph *G, int vName);
 
@@ -78,18 +79,19 @@ void insertEdge(Graph *G, int v1, int v2, int weight) {
     if (p == NULL) {
         G->eHead = e;
     } else {
-        while (e->next) {
-            e = e->next;
+        while (p->next) {
+            p = p->next;
         }
-        e->next = e;
+        p->next = e;
     }
 
-    insertIncidentEdge(findVertex(G, v1), e);
-    insertIncidentEdge(findVertex(G, v2), e);
+    insertIncidentEdge(findVertex(G, v1), v2, e);
+    insertIncidentEdge(findVertex(G, v2), v1, e);
 }
 
-void insertIncidentEdge(Vertex *v, Edge *e) {
+void insertIncidentEdge(Vertex *v, int aName, Edge *e) {
     IncidentEdge *i = (IncidentEdge *) malloc(sizeof(IncidentEdge));
+    i->aName = aName;
     i->e = e;
     i->next = NULL;
 
@@ -97,19 +99,25 @@ void insertIncidentEdge(Vertex *v, Edge *e) {
     if (p == NULL) {
         v->iHead = i;
     } else {
-        while (p->next) {
-            p = p->next;
+        if (p->aName > i->aName) {
+            i->next = p;
+            v->iHead = i;
+        } else {
+            while (p->next && p->next->aName < i->aName) {
+                p = p->next;
+            }
+            i->next = p->next;
+            p->next = i;
         }
-        p->next = i;
     }
 }
 
 Vertex *findVertex(Graph *G, int vName) {
-    Vertex *p = G->vHead;
+    Vertex *v = G->vHead;
 
-    while (p && p->vName != vName) {
-        p = p->next;
+    while (v && v->vName != vName) {
+        v = v->next;
     }
 
-    return p;
+    return v;
 }
