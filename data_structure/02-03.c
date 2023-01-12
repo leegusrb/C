@@ -40,7 +40,7 @@ int *prefixAverages1(int *X, int n) {
         for (int j = 0; j <= i; j++) {
             sum += X[j];
         }
-        A[i] = ((double) sum / (i + 1)) + 0.5;
+        A[i] = (int) (((double) sum / (i + 1)) + 0.5);
     }
 
     return A;
@@ -52,7 +52,7 @@ int *prefixAverages2(int *X, int n) {
     int sum = 0;
     for (int i = 0; i < n; i++) {
         sum += X[i];
-        A[i] = ((double) sum / (i + 1)) + 0.5;
+        A[i] = (int) (((double) sum / (i + 1)) + 0.5);
     }
 
     return A;
