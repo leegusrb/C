@@ -68,7 +68,7 @@ void init(List *L) { // 연결리스트 초기화
     L->trailer = (Node *) malloc(sizeof(Node)); // trailer 노드 만들기
 
     L->header->next = L->trailer;
-    L->trailer->prev = L->trailer;
+    L->trailer->prev = L->header;
 }
 
 void add(List *L, int r, char e) {
