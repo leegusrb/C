@@ -2,22 +2,71 @@
 #include <stdlib.h>
 
 typedef struct Node {
-    int coef;
-    int exp;
+    int coef, exp;
     struct Node *next;
 } Node;
 
 typedef struct {
-    Node *header;
+    Node *H;
 } List;
 
-void init(List *L);
+void init(List *L) {
+    L->H = (Node *) malloc(sizeof(Node));
+    L->H->next = NULL;
+}
 
-void appendTerm(List *L, int c, int e);
+void appendTerm(List *L, int c, int e) {
+    Node *node = (Node *) malloc(sizeof(Node));
+    node->coef = c;
+    node->exp = e;
+    node->next = NULL;
 
-List *addPoly(List *x, List *y);
+    Node *p = L->H;
+    while (p->next != NULL)
+        p = p->next;
+    p->next = node;
+}
 
-void print(List *L);
+List *addPoly(List *x, List *y) {
+    List *result = (List *) malloc(sizeof(List));
+    init(result);
+
+    Node *p = x->H;
+    Node *q = y->H;
+
+    while (p && q) {
+        if (p->exp > q->exp) {
+            appendTerm(result, p->coef, p->exp);
+            p = p->next;
+        } else if (p->exp < q->exp) {
+            appendTerm(result, q->coef, q->exp);
+            q = q->next;
+        } else {
+            int sum = p->coef + q->coef;
+            if (sum != 0)
+                appendTerm(result, sum, p->exp);
+            p = p->next;
+            q = q->next;
+        }
+    }
+    while (p) {
+        appendTerm(result, p->coef, p->exp);
+        p = p->next;
+    }
+    while (q) {
+        appendTerm(result, q->coef, q->exp);
+        q = q->next;
+    }
+
+    return (result);
+}
+
+void print(List *L) {
+    for (Node *p = L->H->next; p; p = p->next) {
+        printf(" %d %d", p->coef, p->exp);
+    }
+    printf("\n");
+}
 
 int main() {
     List *x = (List *) malloc(sizeof(List));
@@ -25,84 +74,21 @@ int main() {
     init(x);
     init(y);
 
-    int n;
+    int n, c, e;
     scanf("%d", &n);
     for (int i = 0; i < n; i++) {
-        int c, e;
         scanf("%d %d", &c, &e);
         appendTerm(x, c, e);
     }
 
     scanf("%d", &n);
     for (int i = 0; i < n; i++) {
-        int c, e;
         scanf("%d %d", &c, &e);
         appendTerm(y, c, e);
     }
 
-    print(addPoly(x, y));
+    List *result = addPoly(x, y);
+    print(result);
 
-    return 0;
-}
-
-void init(List *L) {
-    L->header = (Node *) malloc(sizeof(Node));
-
-    L->header->next = NULL;
-}
-
-void appendTerm(List *L, int c, int e) {
-    Node *t = (Node *) malloc(sizeof(Node));
-    t->coef = c;
-    t->exp = e;
-    t->next = NULL;
-
-    Node *p = L->header;
-    while (p->next) {
-        p = p->next;
-    }
-    p->next = t;
-}
-
-List *addPoly(List *x, List *y) {
-    List *result = (List *) malloc(sizeof(List));
-    init(result);
-
-    Node *i = x->header->next;
-    Node *j = y->header->next;
-
-    while (i && j) {
-        if (i->exp > j->exp) {
-            appendTerm(result, i->coef, i->exp);
-            i = i->next;
-        } else if (i->exp < j->exp) {
-            appendTerm(result, j->coef, j->exp);
-            j = j->next;
-        } else {
-            int sum = i->coef + j->coef;
-            if (sum != 0) {
-                appendTerm(result, sum, i->exp);
-            }
-            i = i->next;
-            j = j->next;
-        }
-    }
-
-    while (i) {
-        appendTerm(result, i->coef, i->exp);
-        i = i->next;
-    }
-    while (j) {
-        appendTerm(result, j->coef, j->exp);
-        j = j->next;
-    }
-
-    return result;
-}
-
-void print(List *result) {
-    for (Node *p = result->header->next; p; p = p->next) {
-        printf(" %d %d", p->coef, p->exp);
-    }
-    printf("\n");
+    return (0);
 }
