@@ -10,20 +10,24 @@ typedef struct {
     Node *H, *T;
 } List;
 
-void initList(List *L) {
+List *makeList() {
+    List *L = (List *) malloc(sizeof(List));
+    
     L->H = (Node *) malloc(sizeof(Node));
     L->T = (Node *) malloc(sizeof(Node));
 
     L->H->next = L->T;
     L->T->prev = L->H;
+    
+    return (L);
 }
 
 int countList(List *L) {
     int cnt = 0;
-    
-    for (Node *p = L->H->next; p != L->T; p = p->next) 
+
+    for (Node *p = L->H->next; p != L->T; p = p->next)
         cnt++;
-    
+
     return (cnt);
 }
 
@@ -96,8 +100,7 @@ void print(List *L) {
 }
 
 int main() {
-    List *L = (List *) malloc(sizeof(List));
-    initList(L);
+    List *L = makeList();
 
     int n, r;
     char c, e;
@@ -115,7 +118,7 @@ int main() {
         } else if (c == 'G') {
             scanf("%d", &r);
             e = get(L, r);
-            if (e) 
+            if (e)
                 printf("%c\n", e);
         } else if (c == 'P') {
             print(L);
