@@ -10,16 +10,27 @@ typedef struct {
     Node *H;
 } List;
 
-void init(List *L) {
+List *makeList() {
+    List *L = (List *) malloc(sizeof(List));
+
     L->H = (Node *) malloc(sizeof(Node));
     L->H->next = NULL;
+
+    return (L);
 }
 
-void appendTerm(List *L, int c, int e) {
+Node *makeNode(int c, int e) {
     Node *node = (Node *) malloc(sizeof(Node));
+
     node->coef = c;
     node->exp = e;
     node->next = NULL;
+
+    return (node);
+}
+
+void appendTerm(List *L, int c, int e) {
+    Node *node = makeNode(c, e);
 
     Node *p = L->H;
     while (p->next != NULL)
@@ -28,8 +39,7 @@ void appendTerm(List *L, int c, int e) {
 }
 
 List *addPoly(List *x, List *y) {
-    List *result = (List *) malloc(sizeof(List));
-    init(result);
+    List *result = makeList();
 
     Node *p = x->H;
     Node *q = y->H;
@@ -49,14 +59,10 @@ List *addPoly(List *x, List *y) {
             q = q->next;
         }
     }
-    while (p) {
+    for (; p; p = p->next)
         appendTerm(result, p->coef, p->exp);
-        p = p->next;
-    }
-    while (q) {
+    for (; q; q = q->next)
         appendTerm(result, q->coef, q->exp);
-        q = q->next;
-    }
 
     return (result);
 }
@@ -69,10 +75,8 @@ void print(List *L) {
 }
 
 int main() {
-    List *x = (List *) malloc(sizeof(List));
-    List *y = (List *) malloc(sizeof(List));
-    init(x);
-    init(y);
+    List *x = makeList();
+    List *y = makeList();
 
     int n, c, e;
     scanf("%d", &n);
