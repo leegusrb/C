@@ -6,151 +6,121 @@ typedef struct Node {
     struct Node *prev, *next;
 } Node;
 
-typedef struct List {
-    Node *header, *trailer;
+typedef struct {
+    Node *H, *T;
 } List;
 
-void init(List *L);
+void initList(List *L) {
+    L->H = (Node *) malloc(sizeof(Node));
+    L->T = (Node *) malloc(sizeof(Node));
 
-void add(List *L, int r, char e);
+    L->H->next = L->T;
+    L->T->prev = L->H;
+}
 
-char delete(List *L, int r);
+int countList(List *L) {
+    int cnt = 0;
+    
+    for (Node *p = L->H->next; p != L->T; p = p->next) 
+        cnt++;
+    
+    return (cnt);
+}
 
-char get(List *L, int r);
+Node *makeNode(char e) {
+    Node *node = (Node *) malloc(sizeof(Node));
 
-int count(List *L);
+    node->elem = e;
+    node->prev = NULL;
+    node->next = NULL;
 
-void print(List *L);
+    return (node);
+}
+
+void add(List *L, int r, char e) {
+    if (countList(L) < r - 1) {
+        printf("invalid position\n");
+        return ;
+    }
+    Node *node = makeNode(e);
+
+    Node *p = L->H;
+    for (int i = 0; i < r - 1; i++)
+        p = p->next;
+    Node *n = p->next;
+
+    node->prev = p;
+    node->next = n;
+
+    p->next = node;
+    n->prev = node;
+}
+
+char delete(List *L, int r) {
+    if (countList(L) < r) {
+        printf("invalid position\n");
+        return 0;
+    }
+    Node *del = L->H;
+    for (int i = 0; i < r; i++)
+        del = del->next;
+
+    Node *p = del->prev;
+    Node *n = del->next;
+
+    p->next = n;
+    n->prev = p;
+
+    char e = del->elem;
+    free(del);
+
+    return (e);
+}
+
+char get(List *L, int r) {
+    if (countList(L) < r) {
+        printf("invalid position\n");
+        return 0;
+    }
+    Node *p = L->H;
+    for (int i = 0; i < r; i++)
+        p = p->next;
+
+    return (p->elem);
+}
+
+void print(List *L) {
+    for (Node *p = L->H->next; p != L->T; p = p->next)
+        printf("%c", p->elem);
+    printf("\n");
+}
 
 int main() {
     List *L = (List *) malloc(sizeof(List));
+    initList(L);
 
-    init(L);
+    int n, r;
+    char c, e;
+    scanf("%d", &n);
 
-    int N;
-    scanf("%d", &N);
-
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < n; i++) {
         getchar();
-
-        char c;
         scanf("%c", &c);
-
         if (c == 'A') {
-            int r;
-            char e;
-
             scanf("%d %c", &r, &e);
             add(L, r, e);
         } else if (c == 'D') {
-            int r;
             scanf("%d", &r);
-
-            delete(L, r);
+            e = delete(L, r);
         } else if (c == 'G') {
-            int r;
             scanf("%d", &r);
-
-            char e = get(L, r);
-            if (e) {
+            e = get(L, r);
+            if (e) 
                 printf("%c\n", e);
-            }
         } else if (c == 'P') {
             print(L);
         }
     }
 
-    return 0;
-}
-
-void init(List *L) { // 연결리스트 초기화
-    L->header = (Node *) malloc(sizeof(Node));  // header 노드 만들기
-    L->trailer = (Node *) malloc(sizeof(Node)); // trailer 노드 만들기
-
-    L->header->next = L->trailer;
-    L->trailer->prev = L->header;
-}
-
-void add(List *L, int r, char e) {
-    if (count(L) + 1 < r) {
-        printf("invalid position\n");
-        return;
-    }
-
-    Node *node = (Node *) malloc(sizeof(Node));
-    node->elem = e;
-    node->prev = NULL;
-    node->next = NULL;
-
-    Node *p = L->header;        // 추가할 노드의 이전 노드
-    Node *q = L->header->next;  // 추가할 노드의 다음 노드
-
-    for (int i = 1; i < r; i++) {
-        p = q;
-        q = q->next;
-    }
-
-    p->next = node;
-    q->prev = node;
-
-    node->prev = p;
-    node->next = q;
-}
-
-char delete(List *L, int r) {
-    if (count(L) < r) {
-        printf("invalid position\n");
-        return 0;
-    }
-
-    Node *p = L->header->next;  // 삭제할 노드
-
-    for (int i = 1; i < r; i++) {
-        p = p->next;
-    }
-
-    char e = p->elem;
-    p->prev->next = p->next;
-    p->next->prev = p->prev;
-
-    free(p);
-
-    return e;
-}
-
-char get(List *L, int r) {
-    if (count(L) < r) {
-        printf("invalid position\n");
-        return 0;
-    }
-
-    Node *p = L->header->next;  // 가져올 노드
-
-    for (int i = 1; i < r; i++) {
-        p = p->next;
-    }
-
-    return p->elem;
-}
-
-int count(List *L) {
-    Node *p = L->header;
-    int cnt = 0;
-
-    while (p->next != L->trailer) {
-        cnt++;
-        p = p->next;
-    }
-
-    return cnt;
-}
-
-void print(List *L) {
-    Node *p = L->header->next;
-
-    while (p != L->trailer) {
-        printf("%c", p->elem);
-        p = p->next;
-    }
-    printf("\n");
+    return (0);
 }
