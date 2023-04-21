@@ -2,13 +2,15 @@
 
 int main()
 {
-    char max = 0, min = 0;
+    char max = 0, min = 0, first = 0;
     while (1)
     {
         char c;
         scanf("%c", &c);
         if (c == '0')  break;
-        else if (c >= 'a' && c <= 'z')
+        if (first == 0)
+            first = c;
+        if (c >= 'a' && c <= 'z')
         {
             if (max == 0 || c > max)
                 max = c;
@@ -19,9 +21,16 @@ int main()
                 min = c;
         }
     }
-    if (max != 0)
+    if (max != 0 && min != 0)
+    {
+        if (first >= 'a' && first <= 'z')
+            printf("%c%c", max, min);
+        else
+            printf("%c%c", min, max);
+    }
+    else if (max != 0)
         printf("%c", max);
-    if (min != 0)
+    else
         printf("%c", min);
     printf("\n");
 
