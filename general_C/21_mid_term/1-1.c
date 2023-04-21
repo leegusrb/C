@@ -24,7 +24,7 @@ int main()
         printf("A\n");
     else if (avg >= 65)
         printf("B+\n");
-    else if (avg >= 50)
+    else
         printf("B\n");
     printf("%.2lf\n", avg);
 
