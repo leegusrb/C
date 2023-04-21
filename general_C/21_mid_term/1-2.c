@@ -32,7 +32,7 @@ int main()
         printf("A\n");
     else if (avg >= 65)
         printf("B+\n");
-    else if (avg >= 50)
+    else
         printf("B\n");
     printf("avg=%.2lf min=%d\n", avg, min);
 
