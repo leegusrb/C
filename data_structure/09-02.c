@@ -32,13 +32,6 @@ char pop(Stack *S) {
 	return (S->elems[S->top + 1]);
 }
 
-char peek(Stack *S) {
-	if (isEmpty(S))
-		return (0);
-
-	return (S->elems[S->top]);
-}
-
 void check(Stack *S, char *eq) {
 	for (int i = 0; eq[i]; i++) {
 		if (eq[i] == '{' || eq[i] == '[' || eq[i] == '(') {
