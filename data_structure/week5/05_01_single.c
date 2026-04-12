@@ -3,22 +3,21 @@
 
 typedef struct Term {
   char elem;
-  struct Term *prev, *next;
+  struct Term *next;
 } Node;
 
 typedef struct {
-  Node *H, *T;
+  // 단일 연결 리스트는 트레일러 노드가 없음
+  Node *H;
   int n;
 } List;
 
 void init(List *L) {
-  // 헤더와 트레일러 노드 생성
+  // 헤더 노드 생성
   L->H = (Node *)malloc(sizeof(Node));
-  L->T = (Node *)malloc(sizeof(Node));
 
-  // 헤더와 트레일러 노드 연결
-  L->H->next = L->T;
-  L->T->prev = L->H;
+  // 헤더 노드 초기화
+  L->H->next = NULL;
 
   // 리스트 크기 초기화
   L->n = 0;
@@ -32,8 +31,9 @@ void add(List *L, int r, char e) {
 
   Node *cur = L->H;
 
-  // 추가할 노드의 위치 찾기
-  for (int i = 0; i < r; i++) {
+  // 추가할 노드의 전 노드 위치 찾기
+  // (추가할 노드의 위치 까지 가면 되돌아 올 수 없기 때문)
+  for (int i = 0; i < r - 1; i++) {
     cur = cur->next;
   }
 
@@ -42,12 +42,10 @@ void add(List *L, int r, char e) {
   newNode->elem = e;
 
   // 새로운 노드 연결
-  newNode->prev = cur->prev;
-  newNode->next = cur;
+  newNode->next = cur->next;
 
   // 이전 노드와 다음 노드 연결
-  cur->prev->next = newNode;
-  cur->prev = newNode;
+  cur->next = newNode;
 
   // 리스트 크기 증가
   L->n++;
@@ -61,17 +59,18 @@ void delete(List *L, int r) {
 
   Node *cur = L->H;
 
-  // 삭제할 노드의 위치 찾기
-  for (int i = 0; i < r; i++) {
+  // 삭제할 노드의 전 노드 위치 찾기
+  for (int i = 0; i < r - 1; i++) {
     cur = cur->next;
   }
 
+  Node *delNode = cur->next;
+
   // 삭제할 노드 연결 해제
-  cur->prev->next = cur->next;
-  cur->next->prev = cur->prev;
+  cur->next = delNode->next;
 
   // 메모리 해제
-  free(cur);
+  free(delNode);
 
   // 리스트 크기 감소
   L->n--;
@@ -96,7 +95,7 @@ char get(List *L, int r) {
 void print(List *L) {
   Node *cur = L->H->next;
 
-  while (cur != L->T) {
+  while (cur != NULL) {
     printf("%c", cur->elem);
     cur = cur->next;
   }
